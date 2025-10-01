@@ -8,6 +8,9 @@
 # variables
 variables.tf
 
+# user data
+user-data.sh
+
 # Crash log files
 crash.log
 crash.*.log
