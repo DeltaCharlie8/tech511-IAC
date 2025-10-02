@@ -110,6 +110,8 @@ Looks for credentials in this order:
   4. If using Terraform on a EC2 instance we can give it an IAM role, giving it permissions to do certain things on AWS (best practice but not possible on your local machine)
      - list virtual machines
      - create virtual machines
+  5. Use a password manager on your local machine to protect your credentials
+     - keepass
 
 ### How should AWS credentials never be passed to Terraform?
 - NEVER hard-code them and they can never end up on a public Git repo
