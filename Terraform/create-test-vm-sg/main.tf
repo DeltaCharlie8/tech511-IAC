@@ -25,15 +25,65 @@ resource "aws_instance" "test_instance" {
   # user data
   user_data = local.user_data_script
 
+  # app subnet id
+  subnet_id = var.app_subnet_id
+
   # name the instance
   tags = {
-      Name = var.instance_name
+      Name = var.app_instance_name
   }
 
-  
-
-  # create the security group
-  #vpc_security_group_ids = [aws_security_group.security_group_name.id]
+  # reference the security group
+  vpc_security_group_ids = [aws_security_group.app_sg.id]
 }
 
-# Create an AWS security group 
+# store the current IP address
+data "external" "my_ip" {
+  program = ["bash", "-c", "curl -s 'https://api.ipify.org?format=json'"]
+}
+
+# Create an AWS security group for the app
+resource "aws_security_group" "app_sg" {
+  name = var.app_sg_name
+  description = "Allows SSH, HTTP, and port 3000"
+
+  # make sure you already have a VPC resource
+  vpc_id = var.my_vpc_id
+
+  # Allow SSH from my local machine
+  ingress {
+    from_port = 22
+    to_port = 22
+    protocol = "tcp"
+    # replaced with my current IP 
+    cidr_blocks = ["${data.external.my_ip.result.ip}/32"] 
+  }
+
+  # Allow HTTP from anywhere
+  ingress {
+    from_port = 80
+    to_port = 80
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow port 3000 from anywhere
+  ingress {
+    from_port = 3000
+    to_port = 3000
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow all outbound traffic
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = var.app_sg_name
+  }
+}
